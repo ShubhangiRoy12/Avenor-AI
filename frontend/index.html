@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Avenor AI — Multi-Agent Intelligence Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo">⬡ Avenor AI</div>
+  <div class="nav-links">
+    <a href="index.html" class="active">Platform</a>
+    <a href="about.html">About</a>
+    <a href="#agents">Agents</a>
+  </div>
+  <div class="nav-status">
+    <div class="dot"></div>
+    <span id="status-text">Connecting...</span>
+  </div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">Agents</div>
+    <div class="sidebar-item active" onclick="setMode('auto')">
+      <span class="icon">🧠</span> Orchestrator
+      <span class="agent-badge">CORE</span>
+    </div>
+    <div class="sidebar-item" onclick="setMode('research')">
+      <span class="icon">🔍</span> Research Agent
+    </div>
+    <div class="sidebar-item" onclick="setMode('analysis')">
+      <span class="icon">📊</span> Analysis Agent
+    </div>
+    <div class="sidebar-item" onclick="setMode('action')">
+      <span class="icon">⚡</span> Action Agent
+    </div>
+    <div class="sidebar-item" onclick="setMode('image')">
+      <span class="icon">🎨</span> Image Agent
+    </div>
+
+    <div class="sidebar-section" style="margin-top:1rem;">Tools</div>
+    <div class="sidebar-item" onclick="clearChat()">
+      <span class="icon">🗑️</span> Clear Chat
+    </div>
+    <div class="sidebar-item" onclick="window.location.href='about.html'">
+      <span class="icon">📖</span> About Platform
+    </div>
+
+    <div class="sidebar-section" style="margin-top:auto;">System</div>
+    <div class="sidebar-item">
+      <span class="icon">💾</span> Memory Active
+      <span class="agent-badge" id="mem-count">0</span>
+    </div>
+  </aside>
+
+  <!-- MAIN CHAT -->
+  <main class="main-area">
+    <div class="chat-window" id="chat-window">
+
+      <!-- WELCOME -->
+      <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-orb">⬡</div>
+        <h1 class="welcome-title">Avenor AI</h1>
+        <p class="welcome-sub">
+          Enterprise multi-agent intelligence platform. Ask anything — your query is
+          intelligently routed through specialized AI agents for research, analysis,
+          decision-making, and multimodal generation.
+        </p>
+        <div class="suggestion-grid">
+          <div class="suggestion-card" onclick="sendSuggestion(this)">
+            <span class="s-icon">🔬</span>
+            Explain how Retrieval-Augmented Generation works in AI systems
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion(this)">
+            <span class="s-icon">🏗️</span>
+            What is agentic AI architecture and how does it differ from chatbots?
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion(this)">
+            <span class="s-icon">🎨</span>
+            Generate image of a futuristic AI research lab
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion(this)">
+            <span class="s-icon">📊</span>
+            Analyze the benefits of multi-agent systems over single-model AI
+          </div>
+        </div>
+      </div>
+
+    </div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.6rem;justify-content:center;">
+        <button onclick="downloadDocument('pdf')" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;padding:0.4rem 1.1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.2s;">
+            📄 Export as PDF
+        </button>
+        <button onclick="downloadDocument('word')" style="background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.4);color:#a5b4fc;padding:0.4rem 1.1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:inherit;transition:all 0.2s;">
+            📝 Export as Word
+        </button>
+    </div>
+    <!-- INPUT -->
+    <div class="input-area">
+      <div class="input-row">
+        <textarea
+          id="chat-input"
+          rows="1"
+          placeholder="Ask Avenor AI anything..."
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <select class="mode-select" id="mode-select">
+          <option value="auto">🧠 Auto</option>
+          <option value="research">🔍 Research</option>
+          <option value="analysis">📊 Analysis</option>
+          <option value="action">⚡ Action</option>
+          <option value="image">🎨 Image</option>
+        </select>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+      <div class="input-hint">
+        Shift+Enter for new line · Select an agent mode or let Avenor decide automatically
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
