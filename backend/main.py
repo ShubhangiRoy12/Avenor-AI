@@ -16,6 +16,7 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 HF_API_TOKEN = os.getenv("HF_API_TOKEN", "")
 GROQ_MODEL = "llama-3.3-70b-versatile"
+PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL") or os.getenv("RENDER_EXTERNAL_URL") or "http://127.0.0.1:8000"
 
 Path("outputs/images").mkdir(parents=True, exist_ok=True)
 Path("outputs/docs").mkdir(parents=True, exist_ok=True)
@@ -92,7 +93,7 @@ def generate_image_free(prompt: str) -> Optional[str]:
             filepath = f"outputs/images/{filename}"
             with open(filepath, "wb") as f:
                 f.write(response.content)
-            return f"http://127.0.0.1:8000/outputs/images/{filename}"
+            return f"{PUBLIC_BASE_URL.rstrip('/')}/outputs/images/{filename}"
         return None
     except Exception as e:
         print(f"Pollinations error: {e}")
@@ -119,7 +120,7 @@ def generate_image_hf(prompt: str) -> Optional[str]:
             filepath = f"outputs/images/{filename}"
             with open(filepath, "wb") as f:
                 f.write(response.content)
-            return f"http://127.0.0.1:8000/outputs/images/{filename}"
+            return f"{PUBLIC_BASE_URL.rstrip('/')}/outputs/images/{filename}"
         else:
             print(f"HF Error: {response.text[:200]}")
             return None

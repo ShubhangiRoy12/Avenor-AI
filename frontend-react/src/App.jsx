@@ -54,6 +54,24 @@ const imageIntentWords = [
   "illustration"
 ];
 
+function resolveBackendAssetUrl(url) {
+  if (!url) return null;
+
+  if (url.startsWith("http://127.0.0.1:8000")) {
+    return url.replace("http://127.0.0.1:8000", API_BASE);
+  }
+
+  if (url.startsWith("http://localhost:8000")) {
+    return url.replace("http://localhost:8000", API_BASE);
+  }
+
+  if (url.startsWith("/")) {
+    return `${API_BASE}${url}`;
+  }
+
+  return url;
+}
+
 const performanceData = [
   { day: "Mon", work: 68, focus: 74 },
   { day: "Tue", work: 76, focus: 82 },
@@ -508,7 +526,7 @@ function App() {
           text: data.result,
           agent: data.agent_used,
           steps: data.steps || [],
-          imageUrl: data.image_url || null
+          imageUrl: resolveBackendAssetUrl(data.image_url)
         }
       ];
 
@@ -599,8 +617,10 @@ function App() {
   }
 
   async function downloadImage(imageUrl) {
+    const assetUrl = resolveBackendAssetUrl(imageUrl);
+
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(assetUrl);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -611,7 +631,7 @@ function App() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch {
-      window.open(imageUrl, "_blank");
+      window.open(assetUrl, "_blank");
     }
   }
 
