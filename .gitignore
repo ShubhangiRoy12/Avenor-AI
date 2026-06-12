@@ -1,0 +1,7 @@
+﻿backend/.env
+.env
+__pycache__/
+*.pyc
+backend/outputs/
+frontend-react/node_modules/
+frontend-react/dist/

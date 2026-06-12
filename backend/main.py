@@ -99,12 +99,12 @@ def generate_image_free(prompt: str) -> Optional[str]:
         return None
 
 def generate_image_hf(prompt: str) -> Optional[str]:
-    """HuggingFace with correct new router URL"""
+    """Generate image with Hugging Face Inference Providers."""
     if not HF_API_TOKEN:
         return None
     try:
         response = httpx.post(
-            "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0",
+            "https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell",
             headers={
                 "Authorization": f"Bearer {HF_API_TOKEN}",
                 "Content-Type": "application/json"
@@ -114,7 +114,8 @@ def generate_image_hf(prompt: str) -> Optional[str]:
         )
         content_type = response.headers.get("content-type", "")
         if response.status_code == 200 and "image" in content_type:
-            filename = f"{uuid.uuid4()}.png"
+            extension = "jpg" if "jpeg" in content_type else "png"
+            filename = f"{uuid.uuid4()}.{extension}"
             filepath = f"outputs/images/{filename}"
             with open(filepath, "wb") as f:
                 f.write(response.content)

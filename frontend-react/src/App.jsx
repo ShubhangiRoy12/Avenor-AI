@@ -39,6 +39,20 @@ import {
 import { motion } from "framer-motion";
 
 const API_BASE = "http://127.0.0.1:8000";
+const DEMO_CHAT_LIMIT = 5;
+const DEMO_IMAGE_LIMIT = 2;
+
+const imageIntentWords = [
+  "generate image",
+  "create image",
+  "make image",
+  "image of",
+  "visual",
+  "picture",
+  "poster",
+  "dashboard mockup",
+  "illustration"
+];
 
 const performanceData = [
   { day: "Mon", work: 68, focus: 74 },
@@ -288,6 +302,20 @@ function App() {
       return [];
     }
   });
+  const [demoUsage, setDemoUsage] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("avenor-demo-usage") || "null") || {
+        ai: 0,
+        image: 0
+      };
+    } catch {
+      return {
+        ai: 0,
+        image: 0
+      };
+    }
+  });
+  const [limitPopup, setLimitPopup] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const completionRate = useMemo(() => {
@@ -339,6 +367,37 @@ function App() {
   function saveMessages(nextMessages) {
     setMessages(nextMessages);
     sessionStorage.setItem("avenor-react-chat", JSON.stringify(nextMessages.slice(-60)));
+  }
+
+  function isImageRequest(query) {
+    const normalizedQuery = query.toLowerCase();
+    return mode === "image" || imageIntentWords.some(word => normalizedQuery.includes(word));
+  }
+
+  function saveDemoUsage(nextUsage) {
+    setDemoUsage(nextUsage);
+    sessionStorage.setItem("avenor-demo-usage", JSON.stringify(nextUsage));
+  }
+
+  function showDemoLimit(kind) {
+    const text =
+      kind === "image"
+        ? "The public demo allows 2 image generations per session to protect API credits. Please contact the creator for full access."
+        : "The public demo allows 5 AI requests per session to protect API credits. Please contact the creator for full access.";
+
+    setLimitPopup({ kind, text });
+    setActiveView("agents");
+
+    const limitMessages = [
+      ...messages,
+      {
+        role: "assistant",
+        text: `Thanks for exploring Avenor AI! ${text}`,
+        agent: "Demo Limit"
+      }
+    ];
+
+    saveMessages(limitMessages.slice(-60));
   }
 
   function rememberConversation(nextMessages) {
@@ -402,6 +461,23 @@ function App() {
   async function sendMessage(customPrompt) {
     const query = (customPrompt || input).trim();
     if (!query || isLoading) return;
+
+    const imageRequest = isImageRequest(query);
+
+    if (demoUsage.ai >= DEMO_CHAT_LIMIT) {
+      showDemoLimit("chat");
+      return;
+    }
+
+    if (imageRequest && demoUsage.image >= DEMO_IMAGE_LIMIT) {
+      showDemoLimit("image");
+      return;
+    }
+
+    saveDemoUsage({
+      ai: demoUsage.ai + 1,
+      image: demoUsage.image + (imageRequest ? 1 : 0)
+    });
 
     const userMessage = {
       role: "user",
@@ -566,6 +642,45 @@ function App() {
           {Array.from({ length: 16 }).map((_, index) => (
             <span key={index} style={{ "--i": index }}></span>
           ))}
+        </div>
+        <div className="hero-backdrop-system" aria-hidden="true">
+          <div className="hero-halo"></div>
+          <div className="orbit-ring orbit-one"></div>
+          <div className="orbit-ring orbit-two"></div>
+          <div className="network-grid">
+            {Array.from({ length: 9 }).map((_, index) => (
+              <span key={index}></span>
+            ))}
+          </div>
+          <div className="data-chip chip-one">Live agents</div>
+          <div className="data-chip chip-two">Secure workspace</div>
+          <div className="data-chip chip-three">Document memory</div>
+          <div className="glass-console console-left">
+            <i></i>
+            <strong></strong>
+            <span></span>
+            <span></span>
+          </div>
+          <div className="glass-console console-right">
+            <i></i>
+            <strong></strong>
+            <span></span>
+            <span></span>
+          </div>
+          <div className="glass-console console-bottom-left mini-console">
+            <i></i>
+            <strong></strong>
+            <span></span>
+          </div>
+          <div className="glass-console console-bottom-right mini-console">
+            <i></i>
+            <strong></strong>
+            <span></span>
+          </div>
+          <div className="signal-trace trace-one"></div>
+          <div className="signal-trace trace-two"></div>
+          <div className="bottom-light-rail rail-one"></div>
+          <div className="bottom-light-rail rail-two"></div>
         </div>
 
         <nav className="landing-nav">
@@ -835,9 +950,31 @@ function App() {
             recentChats={recentChats}
             restoreRecentChat={restoreRecentChat}
             clearMemory={clearMemory}
+            demoUsage={demoUsage}
+            demoLimits={{ ai: DEMO_CHAT_LIMIT, image: DEMO_IMAGE_LIMIT }}
+            isDemoLimited={demoUsage.ai >= DEMO_CHAT_LIMIT}
           />
         )}
       </section>
+
+      {limitPopup && (
+        <div className="demo-limit-backdrop" role="dialog" aria-modal="true">
+          <motion.div
+            className="demo-limit-card"
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.22 }}
+          >
+            <button className="demo-limit-close" onClick={() => setLimitPopup(null)} aria-label="Close limit message">
+              x
+            </button>
+            <div className="demo-limit-emoji">🥳</div>
+            <h3>Thanks for exploring Avenor AI!</h3>
+            <p>{limitPopup.text}</p>
+            <button className="primary-button" onClick={() => setLimitPopup(null)}>Got it</button>
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 }
@@ -1390,7 +1527,10 @@ function AgentsView({
   openDocumentStudio,
   recentChats,
   restoreRecentChat,
-  clearMemory
+  clearMemory,
+  demoUsage,
+  demoLimits,
+  isDemoLimited
 }) {
   const messageListRef = useRef(null);
   const lastUserRef = useRef(null);
@@ -1412,6 +1552,10 @@ function AgentsView({
           <div>
             <h3>AI Agent Workspace</h3>
             <p>Research, analysis, office writing, image generation, reports</p>
+            <div className="usage-pills">
+              <span>{demoUsage.ai}/{demoLimits.ai} AI requests</span>
+              <span>{demoUsage.image}/{demoLimits.image} images</span>
+            </div>
           </div>
           <div className="chat-actions">
             <button onClick={clearHistory}>Clear History</button>
@@ -1480,10 +1624,12 @@ function AgentsView({
                 sendMessage();
               }
             }}
-            placeholder="Ask for reports, office emails, task analysis, visual generation..."
+            disabled={isDemoLimited || isLoading}
+            placeholder={isDemoLimited ? "Demo limit reached. Please contact the creator for full access." : "Ask for reports, office emails, task analysis, visual generation..."}
           />
-          <button onClick={() => sendMessage()}><Send size={18} /></button>
+          <button onClick={() => sendMessage()} disabled={isDemoLimited || isLoading}><Send size={18} /></button>
         </div>
+        {isDemoLimited && <p className="demo-limit-inline">Demo limit reached. Thanks for exploring Avenor AI 😊</p>}
       </section>
 
       <aside className="prompt-panel">
