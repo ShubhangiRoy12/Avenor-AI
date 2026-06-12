@@ -5,3 +5,6 @@ __pycache__/
 backend/outputs/
 frontend-react/node_modules/
 frontend-react/dist/
+
+frontend-react/node_modules/
+frontend-react/dist/
