@@ -38,7 +38,7 @@ import {
 } from "recharts";
 import { motion } from "framer-motion";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://avenor-ai-backend.onrender.com";
 const DEMO_CHAT_LIMIT = 5;
 const DEMO_IMAGE_LIMIT = 2;
 
